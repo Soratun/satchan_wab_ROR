@@ -1,0 +1,89 @@
+<div class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#FFD08F] to-[#F26B9C] bg-fixed text-white">
+
+  <div class="flex flex-col items-center justify-center min-h-screen text-white">
+    <h1 class="text-4xl font-bold mb-4">🎉  Happy Birthday Satchan BNK48 🎉</h1>
+    <div class="relative w-[500px] h-[500px] overflow-hidden bg-black rounded-lg shadow-lg">
+      <%= image_tag(@images.first, id: "slideshow", alt: "slideshow", class: "absolute inset-0 w-full h-full object-cover fade show") %>
+    </div>
+    <canvas id="fireworksCanvas" class="absolute inset-0"></canvas>
+  </div>
+
+</div>
+
+<script>
+  function createFireworks() {
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    let fireworksRunning = true; // ใช้เพื่อควบคุมการทำงาน
+
+    function Particle(x, y, color) {
+      this.x = x;
+      this.y = y;
+      this.color = color;
+      this.radius = Math.random() * 3 + 2;
+      this.speedX = Math.random() * 4 - 2;
+      this.speedY = Math.random() * 4 - 2;
+      this.life = 0;
+      this.maxLife = Math.random() * 40 + 60;
+
+      this.update = function () {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life++;
+      };
+
+      this.draw = function () {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      };
+    }
+
+    function explode(x, y) {
+      if (!fireworksRunning) return; // หยุดการทำงานถ้า fireworks ถูกปิด
+      const colors = ['#ff6f61', '#ffcc00', '#33cc33', '#3399ff', '#cc66ff'];
+      for (let i = 0; i < 100; i++) {
+        particles.push(new Particle(x, y, colors[Math.floor(Math.random() * colors.length)]));
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((particle, index) => {
+        particle.update();
+        particle.draw();
+        if (particle.life > particle.maxLife) {
+          particles.splice(index, 1);
+        }
+      });
+
+      if (fireworksRunning) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    canvas.addEventListener('click', (e) => {
+      explode(e.clientX, e.clientY);
+    });
+
+    const interval = setInterval(() => {
+      explode(Math.random() * canvas.width, Math.random() * canvas.height);
+    }, 1000);
+
+    setTimeout(() => {
+      fireworksRunning = false; // หยุดดอกไม้ไฟ
+      clearInterval(interval); // ยกเลิกการเรียก explode
+      canvas.style.display = 'none'; // ซ่อน Canvas
+    }, 30000); // หยุดหลังจาก 30 วินาที
+
+    animate();
+  }
+
+  document.addEventListener('DOMContentLoaded', createFireworks);
+</script>

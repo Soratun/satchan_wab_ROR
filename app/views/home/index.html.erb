@@ -1,0 +1,84 @@
+<div class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#FFD08F] to-[#F26B9C] bg-fixed text-white">
+  <div class="flex flex-col items-center justify-center text-center space-y-6">
+    <h1 class="text-4xl font-bold mt-3">Countdown Happy Birthday Satchan BNK48</h1>
+    
+    <!-- กรอบรูป -->
+    <div class="relative w-[500px] h-[500px] overflow-hidden bg-black rounded-lg shadow-lg">
+      <%= image_tag(@images.first, id: "slideshow", alt: "slideshow", class: "absolute inset-0 w-full h-full object-cover fade show") %>
+    </div>
+
+    <!-- Countdown Timer -->
+    <div class="flex justify-center space-x-4">
+      <div class="countdown-box">
+        <span id="days" class="text-4xl font-semibold">00</span>
+        <p class="text-sm uppercase">Days</p>
+      </div>
+      <div class="countdown-box">
+        <span id="hours" class="text-4xl font-semibold">00</span>
+        <p class="text-sm uppercase">Hours</p>
+      </div>
+      <div class="countdown-box">
+        <span id="minutes" class="text-4xl font-semibold">00</span>
+        <p class="text-sm uppercase">Minutes</p>
+      </div>
+      <div class="countdown-box">
+        <span id="seconds" class="text-4xl font-semibold">00</span>
+        <p class="text-sm uppercase">Seconds</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // รับค่าเป้าหมายจากเซิร์ฟเวอร์
+  const targetDate = new Date("<%= @target_date.iso8601 %>").getTime();
+  const images = <%= raw @images.to_json %>;
+  let currentImageIndex = 0;
+
+function updateCountdown() {
+  const now = new Date().getTime();
+  const distance = targetDate - now;
+
+  if (distance > 0) {
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    document.getElementById("days").textContent = days;
+    document.getElementById("hours").textContent = hours;
+    document.getElementById("minutes").textContent = minutes;
+    document.getElementById("seconds").textContent = seconds;
+  } else {
+    clearInterval(timerInterval);
+    // เปลี่ยนหน้าไปยัง /countdown/complete
+    window.location.href = "/countdown/complete";
+  }
+}
+
+
+  // ฟังก์ชันอัปเดตรูปภาพ
+  function updateSlideshow() {
+  const slideshow = document.getElementById("slideshow");
+  
+  // ลบคลาส "show" เพื่อเริ่มการเฟดออก
+  slideshow.classList.remove("show");
+
+  // รอให้รูปภาพเฟดออกก่อนเปลี่ยน
+  setTimeout(() => {
+    currentImageIndex = (currentImageIndex + 1) % images.length; // เปลี่ยนไปยังรูปภาพถัดไป
+    slideshow.src = `/assets/${images[currentImageIndex]}`; // อัปเดต path รูปภาพ
+
+    // เพิ่มคลาส "show" เพื่อเฟดเข้า
+    slideshow.classList.add("show");
+  }, 1000); // ระยะเวลาต้องตรงกับ transition (1 วินาที)
+}
+
+  // ตั้งเวลาอัปเดต
+  const timerInterval = setInterval(updateCountdown, 1000);
+  const slideshowInterval = setInterval(updateSlideshow, 5000);
+
+  // เริ่มต้นการทำงาน
+  updateCountdown();
+  updateSlideshow();
+</script>
